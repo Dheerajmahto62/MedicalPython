@@ -4,8 +4,9 @@ from flask_bcrypt import Bcrypt
 from flask_pymongo import PyMongo
 from dotenv import load_dotenv
 import datetime
-import jwt
+
 import os
+import jwt
 
 # Load environment variables
 load_dotenv()
