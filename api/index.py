@@ -127,47 +127,46 @@ def manage_camps():
         return jsonify({"error": str(e)}), 500
 
 # ✅ New: Book Doctor Appointment API
-@app.route('/book_appointment', methods=['POST'])
-def book_appointment():
+# ✅ Manage Appointments API (GET & POST)
+@app.route('/appointments', methods=['GET', 'POST'])
+def manage_appointments():
     try:
-        data = request.json
-        required_fields = ["name", "date", "time", "medication_details"]
+        if request.method == 'GET':
+            # Fetch all appointments
+            appointments = list(appointments_collection.find({}, {"_id": 0}))
+            return jsonify(appointments), 200
 
-        missing_fields = [field for field in required_fields if field not in data]
-        if missing_fields:
-            return jsonify({"message": "Missing required fields", "missing_fields": missing_fields}), 400
+        elif request.method == 'POST':
+            # Book a new appointment
+            data = request.json
+            required_fields = ["name", "date", "time", "medication_details"]
 
-        appointment = {
-            "name": data["name"],
-            "date": data["date"],
-            "time": data["time"],
-            "medication_details": data["medication_details"],
-            "document": data.get("document", None),
-            "created_at": datetime.datetime.utcnow()
-        }
+            missing_fields = [field for field in required_fields if field not in data]
+            if missing_fields:
+                return jsonify({"message": "Missing required fields", "missing_fields": missing_fields}), 400
 
-        appointments_collection.insert_one(appointment)
+            appointment = {
+                "name": data["name"],
+                "date": data["date"],
+                "time": data["time"],
+                "medication_details": data["medication_details"],
+                "document": data.get("document", None),
+                "created_at": datetime.datetime.utcnow()
+            }
 
-        return jsonify({"message": "Appointment booked successfully!"}), 201
+            appointments_collection.insert_one(appointment)
+
+            return jsonify({"message": "Appointment booked successfully!"}), 201
 
     except Exception as e:
-        print(f"Error booking appointment: {str(e)}")
+        print(f"Error managing appointments: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
-# ✅ New: Fetch All Doctor Appointments
-@app.route('/appointments', methods=['GET'])
-def get_appointments():
-    try:
-        appointments = list(appointments_collection.find({}, {"_id": 0}))
-        return jsonify(appointments), 200
-    except Exception as e:
-        print(f"Error fetching appointments: {str(e)}")
-        return jsonify({"error": str(e)}), 500
 
 # ✅ Home Route
 @app.route('/', methods=['GET'])
 def home():
     return jsonify({"message": "Welcome to Blood Donation & Medical API"}), 200
 
-# if __name__ == '__main__':
-#     app.run(debug=True, port=45171, host="0.0.0.0")
+if __name__ == '__main__':
+    app.run(debug=True, port=45171, host="0.0.0.0")
