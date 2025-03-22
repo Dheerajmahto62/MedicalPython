@@ -169,5 +169,5 @@ def get_appointments():
 def home():
     return jsonify({"message": "Welcome to Blood Donation & Medical API"}), 200
 
-if __name__ == '__main__':
-    app.run(debug=True, port=45171, host="0.0.0.0")
+# if __name__ == '__main__':
+#     app.run(debug=True, port=45171, host="0.0.0.0")
