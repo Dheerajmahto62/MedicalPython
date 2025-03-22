@@ -4,7 +4,6 @@ from flask_bcrypt import Bcrypt
 from flask_pymongo import PyMongo
 from dotenv import load_dotenv
 import datetime
-
 import os
 import jwt
 
@@ -25,8 +24,9 @@ bcrypt = Bcrypt(app)
 # MongoDB Collections
 donors_collection = mongo.db.donors
 camps_collection = mongo.db.camps
+appointments_collection = mongo.db.appointments  # New Collection for Appointments
 
-# Register Donor API
+# ✅ Register Donor API
 @app.route('/register_donor', methods=['POST'])
 def register_donor():
     try:
@@ -72,7 +72,7 @@ def register_donor():
         print(f"Error registering donor: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
-# Login API
+# ✅ Login API
 @app.route('/login', methods=['POST'])
 def login():
     try:
@@ -92,7 +92,7 @@ def login():
         print(f"Login error: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
-# Get Donors API
+# ✅ Get Donors API
 @app.route('/donors', methods=['GET'])
 def get_donors():
     try:
@@ -102,7 +102,7 @@ def get_donors():
         print(f"Error fetching donors: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
-# Manage Camps API
+# ✅ Manage Camps API
 @app.route('/camps', methods=['GET', 'POST'])
 def manage_camps():
     try:
@@ -126,10 +126,48 @@ def manage_camps():
         print(f"Error managing camps: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
-# Home Route
+# ✅ New: Book Doctor Appointment API
+@app.route('/book_appointment', methods=['POST'])
+def book_appointment():
+    try:
+        data = request.json
+        required_fields = ["name", "date", "time", "medication_details"]
+
+        missing_fields = [field for field in required_fields if field not in data]
+        if missing_fields:
+            return jsonify({"message": "Missing required fields", "missing_fields": missing_fields}), 400
+
+        appointment = {
+            "name": data["name"],
+            "date": data["date"],
+            "time": data["time"],
+            "medication_details": data["medication_details"],
+            "document": data.get("document", None),
+            "created_at": datetime.datetime.utcnow()
+        }
+
+        appointments_collection.insert_one(appointment)
+
+        return jsonify({"message": "Appointment booked successfully!"}), 201
+
+    except Exception as e:
+        print(f"Error booking appointment: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+# ✅ New: Fetch All Doctor Appointments
+@app.route('/appointments', methods=['GET'])
+def get_appointments():
+    try:
+        appointments = list(appointments_collection.find({}, {"_id": 0}))
+        return jsonify(appointments), 200
+    except Exception as e:
+        print(f"Error fetching appointments: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+# ✅ Home Route
 @app.route('/', methods=['GET'])
 def home():
-    return jsonify({"message": "Welcome to Blood Donation API"}), 200
+    return jsonify({"message": "Welcome to Blood Donation & Medical API"}), 200
 
 # if __name__ == '__main__':
 #     app.run(debug=True, port=45171, host="0.0.0.0")
